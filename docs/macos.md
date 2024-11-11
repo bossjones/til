@@ -49,3 +49,98 @@ Citations:
 [5] https://www.reddit.com/r/MacOS/comments/fqxzkr/catalina_using_apfs_best_practice_for_of_files_in/
 [6] https://eclecticlight.co/2022/12/08/spotlight-problems-mds_stores-and-mdworker-in-trouble/
 [7] https://services.dartmouth.edu/TDClient/1806/Portal/KB/ArticleDet?ID=84257
+
+---
+
+# Question: how do I set ulimit and file handles on macos ?
+
+To set the ulimit and increase the maximum number of open file handles on macOS, follow these steps:
+
+## Check Current Limits
+
+First, check your current limits:
+
+```bash
+ulimit -n
+launchctl limit maxfiles
+```
+
+The first command shows the current soft limit, while the second displays both soft and hard limits.
+
+## Temporary Increase
+
+To temporarily increase the limit for your current shell session:
+
+```bash
+ulimit -n 65536
+```
+
+This sets the soft limit to 65536 for the current session only[1].
+
+## Permanent System-Wide Increase
+
+For a permanent, system-wide change:
+
+1. Create a file named `limit.maxfiles.plist` in `/Library/LaunchDaemons/` with the following content[1]:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>limit.maxfiles</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>launchctl</string>
+      <string>limit</string>
+      <string>maxfiles</string>
+      <string>64000</string>
+      <string>200000</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ServiceIPC</key>
+    <false/>
+  </dict>
+</plist>
+```
+
+2. Change the owner of the file:
+
+```bash
+sudo chown root:wheel /Library/LaunchDaemons/limit.maxfiles.plist
+```
+
+3. Load the new settings:
+
+```bash
+sudo launchctl load -w /Library/LaunchDaemons/limit.maxfiles.plist
+```
+
+4. Verify the new limits:
+
+```bash
+launchctl limit maxfiles
+```
+
+## Additional Considerations
+
+- For Java applications, you may need to pass the `-XX:-MaxFDLimit` JVM argument to remove the built-in limit of 10240[4].
+
+- On newer macOS versions, you might encounter restrictions due to System Integrity Protection (SIP). In such cases, you may need to adjust your approach or consult Apple's documentation for the latest recommended practices[6].
+
+- Remember that setting extremely high limits can potentially impact system stability, so choose values appropriate for your needs and system capabilities.
+
+- After making changes, a system restart may be required for all settings to take effect fully[1].
+
+By following these steps, you should be able to increase the ulimit and file handle limits on your macOS system. Always test thoroughly after making such changes to ensure system stability and application performance.
+
+Citations:
+[1] https://neo4j.com/developer/kb/setting-max-open-file-limits-on-osx/
+[2] https://github.com/gradle/gradle/issues/17274
+[3] https://docs.riak.com/riak/kv/latest/using/performance/open-files-limit/index.html
+[4] https://questdb.io/blog/max-open-file-limit-macos-jvm/
+[5] https://gist.github.com/tombigel/d503800a282fcadbee14b537735d202c?permalink_comment_id=3361594
+[6] https://developer.apple.com/forums/thread/735798?answerId=762208022
+[7] https://wilsonmar.github.io/maximum-limits/

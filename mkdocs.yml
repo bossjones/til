@@ -1,47 +1,51 @@
 # Project information
-site_name: Today I Learned
-site_author: Malcolm Jones
-site_description: >-
+site_name: Today I Learned          # Required: Sets the name of the documentation site
+site_author: Malcolm Jones          # Sets the author meta tag in the HTML header
+site_description: >-                # Sets the site description meta tag in the HTML header
   A collection of notes on things I've learned.
-edit_uri: edit/main/docs
-watch:
+edit_uri: edit/main/docs           # Configures the edit button URL path
+watch:                             # Additional directories to watch when running mkdocs serve
   - src/
 
-# Repository
-repo_name: malcolmjones/til
-repo_url: https://github.com/malcolmjones/til
+# Repository information
+repo_name: malcolmjones/til        # Sets the name displayed for the repository link
+repo_url: https://github.com/malcolmjones/til  # URL to the repository
 
-# Copyright
+# Copyright footer text
 copyright: Copyright &copy; 2024 Malcolm Jones - All Rights Reserved
 
+# Additional CSS files to include
 extra_css:
 - css/mkdocstrings.css
 
+# Theme configuration
 theme:
-  name: material
+  name: material                    # Uses the Material for MkDocs theme
   features:
-    - content.action.edit
-    - content.action.view
-    - content.code.copy  # https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#code-copy-button
-    - content.code.select  # https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#code-selection-button
-    - content.tooltips
-    - navigation.footer
-    - search.share
+    - content.action.edit          # Adds an edit button to pages
+    - content.action.view          # Adds a view source button
+    - content.code.copy           # Adds a copy button to code blocks
+    - content.code.select         # Enables code block text selection
+    - content.tooltips            # Enables tooltip annotations
+    - navigation.footer           # Shows footer navigation
+    - search.share               # Enables search result sharing
+
+# Plugin configuration
 plugins:
-  - autorefs  # recommended by mkdocstrings
-  - mermaid2  # https://mkdocs-mermaid2.readthedocs.io/
-  - mkdocstrings:  # https://mkdocstrings.github.io/
+  - autorefs                      # Enables automatic cross-references
+  - mermaid2                     # Enables Mermaid.js diagrams support
+  - mkdocstrings:                # Python API documentation generator
       handlers:
         python:
-          import:
+          import:                # External documentation inventory files
           - https://docs.python.org/3/objects.inv
-          - https://installer.readthedocs.io/en/stable/objects.inv  # demonstration purpose in the docs
+          - https://installer.readthedocs.io/en/stable/objects.inv
           - https://mkdocstrings.github.io/autorefs/objects.inv
           options:
             docstring_options:
               ignore_init_summary: true
             docstring_section_style: list
-            filters: ["!^_"]
+            filters: ["!^_"]      # Exclude private members
             heading_level: 1
             inherited_members: false
             merge_init_into_class: true
@@ -54,32 +58,32 @@ plugins:
             signature_crossrefs: true
             summary: true
       default_handler: python
-  - search  # https://squidfunk.github.io/mkdocs-material/plugins/search/
-  - tags # https://squidfunk.github.io/mkdocs-material/plugins/tags/
+  - search                       # Enables the search feature
+  - tags                         # Enables tags/categories for pages
 
+# Markdown extension configuration
 markdown_extensions:
   # Python Markdown
-  - toc:
-      permalink: true
+  - toc:                         # Table of contents extension
+      permalink: true            # Adds permalinks to headers
 
   # Python Markdown Extensions
-  - abbr
-  - admonition
-  - attr_list
-  - pymdownx.details
-  - pymdownx.emoji:
+  - abbr                         # Abbreviation syntax support
+  - admonition                   # Adds note/warning/etc blocks
+  - attr_list                    # Enables custom attributes
+  - pymdownx.details            # Collapsible admonition blocks
+  - pymdownx.emoji:             # Emoji support
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.highlight:
-  - pymdownx.inlinehilite
-  - pymdownx.magiclink  # Allows plain ol' URLs to be links
-  - pymdownx.snippets
-  - pymdownx.superfences:
-      # make exceptions to highlighting of code:
-      custom_fences:
+  - pymdownx.highlight          # Code syntax highlighting
+  - pymdownx.inlinehilite       # Inline code highlighting
+  - pymdownx.magiclink          # Auto-links URLs in text
+  - pymdownx.snippets           # Include content from other files
+  - pymdownx.superfences:       # Enhanced fenced code blocks
+      custom_fences:            # Custom fence types
         - name: mermaid
           class: mermaid
           format: !!python/name:mermaid2.fence_mermaid_custom
-  - pymdownx.tabbed:
+  - pymdownx.tabbed:            # Tabbed content
       alternate_style: true
-  - tables
+  - tables                      # Table syntax support
