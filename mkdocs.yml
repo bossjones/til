@@ -1,0 +1,85 @@
+# Project information
+site_name: Today I Learned
+site_author: Malcolm Jones
+site_description: >-
+  A collection of notes on things I've learned.
+edit_uri: edit/main/docs
+watch:
+  - src/
+
+# Repository
+repo_name: malcolmjones/til
+repo_url: https://github.com/malcolmjones/til
+
+# Copyright
+copyright: Copyright &copy; 2024 Malcolm Jones - All Rights Reserved
+
+extra_css:
+- css/mkdocstrings.css
+
+theme:
+  name: material
+  features:
+    - content.action.edit
+    - content.action.view
+    - content.code.copy  # https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#code-copy-button
+    - content.code.select  # https://squidfunk.github.io/mkdocs-material/reference/code-blocks/#code-selection-button
+    - content.tooltips
+    - navigation.footer
+    - search.share
+plugins:
+  - autorefs  # recommended by mkdocstrings
+  - mermaid2  # https://mkdocs-mermaid2.readthedocs.io/
+  - mkdocstrings:  # https://mkdocstrings.github.io/
+      handlers:
+        python:
+          import:
+          - https://docs.python.org/3/objects.inv
+          - https://installer.readthedocs.io/en/stable/objects.inv  # demonstration purpose in the docs
+          - https://mkdocstrings.github.io/autorefs/objects.inv
+          options:
+            docstring_options:
+              ignore_init_summary: true
+            docstring_section_style: list
+            filters: ["!^_"]
+            heading_level: 1
+            inherited_members: false
+            merge_init_into_class: true
+            separate_signature: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            summary: true
+      default_handler: python
+  - search  # https://squidfunk.github.io/mkdocs-material/plugins/search/
+  - tags # https://squidfunk.github.io/mkdocs-material/plugins/tags/
+
+markdown_extensions:
+  # Python Markdown
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - abbr
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink  # Allows plain ol' URLs to be links
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      # make exceptions to highlighting of code:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
