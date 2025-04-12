@@ -112,7 +112,7 @@ confirm() {
 # Query system for available storage pools
 get_available_storage_pools() {
     section "Available Storage Pools"
-    pvesm list | grep -v "Name" | awk '{print $1}' | sort
+    run_command "pvesm status" | grep -v "Name" | awk '{print $1}' | sort
 }
 
 # Query system for available network bridges
