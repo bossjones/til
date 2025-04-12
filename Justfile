@@ -194,3 +194,10 @@ add-cursor-context:
 	rm -rf democracy_exe/vendored/react-agent/.git
 	rm -rf democracy_exe/vendored/chat-langchain/.git
 	rm -rf democracy_exe/vendored/goob_ai/.git
+
+marimo-edit:
+	uv run marimo edit
+
+# Automatically convert Jupyter notebooks. Automatically convert Jupyter notebooks to marimo notebooks with the CLI
+marimo-convert:
+	uv run marimo convert your_notebook.ipynb > your_notebook.py
