@@ -1,0 +1,109 @@
+---
+description: This rule governs the creation and maintenance of shell scripts for Proxmox virtualization environments. It should be applied when writing new Proxmox automation scripts, modifying existing Proxmox management scripts, creating backup or maintenance scripts for Proxmox, or working with any shell scripts that interact with Proxmox CLI commands.
+globs: "**/*.{sh,bash}"
+alwaysApply: false
+---
+
+# Proxmox Shell Scripting Guidelines
+
+<rule>
+name: proxmox-shell-scripting
+description: Guidelines for writing shell scripts that interact with Proxmox CLI
+filters:
+  - type: file_extension
+    pattern: "\\.(sh|bash)$"
+actions:
+  - type: suggest
+    message: |
+      Follow these guidelines for Proxmox shell scripting:
+      1. Use proper shebang line (#!/bin/bash)
+      2. Include input validation for all parameters
+      3. Implement proper error handling
+      4. Use meaningful Proxmox-specific variable names
+      5. Include logging for important operations
+      6. Use appropriate exit codes
+      7. Add script description and usage in comments
+      8. Never hardcode sensitive information
+      9. Include confirmation for destructive operations
+      10. Use proper command prefixes (qm, pct, pveum, pvesm)
+      11. Include cluster awareness checks
+      12. Validate resource availability
+
+      ## Command Categories
+
+      ### Virtual Machine (qm)
+      - Create: qm create $VMID --memory $MEM --cores $CORES
+      - Start: qm start $VMID
+      - Stop: qm shutdown $VMID --timeout 300
+
+      ### Container (pct)
+      - Create: pct create $CTID $TEMPLATE --hostname $HOST
+      - List: pct list
+      - Stop: pct stop $CTID
+
+      ### Storage (pvesm)
+      - Status: pvesm status
+      - Add: pvesm add $TYPE $ID --$OPTIONS
+
+      ### User (pveum)
+      - Add: pveum user add $USER@pve
+      - ACL: pveum acl modify / -user $USER -role $ROLE
+
+      ### Cluster (pvecm)
+      - Status: pvecm status
+      - Add: pvecm add $MASTER_IP
+metadata:
+  priority: high
+  version: 1.0
+  tags: ["proxmox", "shell", "automation", "virtualization"]
+</rule>
+
+## Examples
+
+<example>
+#!/bin/bash
+# Script: create_vm.sh
+# Description: Creates a new VM with basic configuration
+# Usage: ./create_vm.sh <vmid> <name> <memory> <cores>
+
+# Input validation
+validate_vmid() {
+    local vmid=$1
+    if ! [[ "$vmid" =~ ^[0-9]+$ ]] || [ "$vmid" -lt 100 ]; then
+        logger -t "create_vm" "Invalid VMID: $vmid"
+        return 1
+    fi
+    return 0
+}
+
+# Error handling
+if ! validate_vmid "$1"; then
+    echo "Error: Invalid VMID format"
+    exit 1
+fi
+
+# Execute with logging
+if ! qm create "$1" --name "$2" --memory "$3" --cores "$4"; then
+    logger -t "create_vm" "Failed to create VM $1"
+    exit 1
+fi
+
+logger -t "create_vm" "Successfully created VM $1"
+echo "VM created successfully"
+exit 0
+</example>
+
+<example type="invalid">
+#!/bin/bash
+# Bad example without proper validation or error handling
+
+# No input validation
+VMID=$1
+NAME=$2
+
+# Direct execution without checks
+qm create $VMID --name $NAME --memory 512
+
+# No error handling or logging
+qm start $VMID
+</example>
