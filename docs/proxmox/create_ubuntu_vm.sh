@@ -181,14 +181,14 @@ validate_parameters() {
     info "VM ID $VM_ID is available"
 
     # Validate storage
-    if ! pvesm list | grep -q "^$STORAGE"; then
-        error "Storage '$STORAGE' does not exist. Available storage pools: $(pvesm list | grep -v 'Name' | awk '{print $1}' | paste -sd ',' -)"
+    if ! pvesm status | grep -q "^$STORAGE"; then
+        error "Storage '$STORAGE' does not exist. Available storage pools: $(pvesm status | grep -v 'Name' | awk '{print $1}' | paste -sd ',' -)"
     fi
     info "Storage '$STORAGE' exists"
 
     # Validate ISO storage
-    if ! pvesm list | grep -q "^$ISO_STORAGE"; then
-        error "ISO storage '$ISO_STORAGE' does not exist. Available storage pools: $(pvesm list | grep -v 'Name' | awk '{print $1}' | paste -sd ',' -)"
+    if ! pvesm status | grep -q "^$ISO_STORAGE"; then
+        error "ISO storage '$ISO_STORAGE' does not exist. Available storage pools: $(pvesm status | grep -v 'Name' | awk '{print $1}' | paste -sd ',' -)"
     fi
     info "ISO storage '$ISO_STORAGE' exists"
 
@@ -286,7 +286,7 @@ fi
 section "Creating VM on Proxmox"
 
 # Download ISO if not already in Proxmox storage
-if ! pvesm list $ISO_STORAGE | grep -q "$ISO_NAME"; then
+if ! pvesm list "$ISO_STORAGE" --content iso | grep -q "$ISO_NAME"; then
     info "Downloading Ubuntu Desktop ISO..."
     run_command "wget -O \"$TMP_DIR/$ISO_NAME\" \"$UBUNTU_ISO_URL\"" || {
         error "Failed to download Ubuntu ISO"
