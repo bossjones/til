@@ -8,12 +8,12 @@
 #################################################
 
 # Basic VM Configuration
-VM_ID="2000"                   # Unique VM ID (change for each new VM)
-VM_NAME="ubuntu-desktop-24.04" # Display name
-MEMORY="8192"                  # Memory in MB (8GB recommended for Desktop)
+VM_ID="103"                   # Unique VM ID (change for each new VM)
+VM_NAME="gitops-lab2" # Display name
+MEMORY="32048"                  # Memory in MB (8GB recommended for Desktop)
 BALLOON="2048"                 # Memory balloon minimum (2GB)
-CORES="4"                      # CPU cores
-DISK_SIZE="64G"                # Disk size (desktop needs more space)
+CORES="8"                      # CPU cores
+DISK_SIZE="256G"                # Disk size (desktop needs more space)
 STORAGE="local-lvm"            # Storage pool name
 NET_BRIDGE="vmbr0"             # Network bridge
 VLAN_TAG=""                    # VLAN tag (leave empty if not using VLAN)
