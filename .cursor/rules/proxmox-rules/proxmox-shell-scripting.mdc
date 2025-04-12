@@ -1,6 +1,6 @@
 ---
 description: This rule governs the creation and maintenance of shell scripts for Proxmox virtualization environments. It should be applied when writing new Proxmox automation scripts, modifying existing Proxmox management scripts, creating backup or maintenance scripts for Proxmox, or working with any shell scripts that interact with Proxmox CLI commands.
-globs: "**/*.{sh,bash}"
+globs: **/*.sh,**/*.bash
 alwaysApply: false
 ---
 
