@@ -6,7 +6,7 @@
 #################################################
 ### CONFIGURABLE PARAMETERS - MODIFY AS NEEDED ###
 #################################################
-
+DRY_RUN="true"
 # Basic VM Configuration
 VM_ID="103"                   # Unique VM ID (change for each new VM)
 VM_NAME="gitops-lab2" # Display name
