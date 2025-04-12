@@ -21,6 +21,13 @@ VLAN_TAG=""                    # VLAN tag (leave empty if not using VLAN)
 # Authentication
 SSH_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5z92gT4YFkAldHErkVfZKq2jPa6sNN87SyLY2jV0ljcXKkb1tyujX3CVgLz189tSuigqtR32gcnJNZCexqa67149/9qaGzWitb2Ry3rghSP+5VdQH5J0JC92YpHbC1lKiI/YADnFMC6SEWHgMvBXrrF9ZSGiQnRcg5AaVNDof06uG3Lhpxt5+ooihpjWX9xx1pYoAfQXDRUpZmQTsFwN+XdgS3mOWQoBsWsA9cofxWDELQhC2I2M+reYDW3s/8UpPxcVLcBu4oVzbkyER+8khLv1EC4XnWPhN1JX2W/FzmJ+fzqKgd0XOCdDK0/yj4rEQ8MZgQAHbMEINYaRWGKhr root@pve1"   # Your SSH public key (replace with actual key)
 USERNAME="pi"               # Default user
+# Check if PROXMOX_ROOT_PASS is set
+if [ -z "$PROXMOX_ROOT_PASS" ]; then
+    echo "ERROR: PROXMOX_ROOT_PASS environment variable is not set."
+    echo "Please set it before running this script:"
+    echo "export PROXMOX_ROOT_PASS=yourpassword"
+    exit 1
+fi
 # Generate a secure password hash instead of plain text
 PASSWORD_HASH=$(openssl passwd -6 "$PROXMOX_ROOT_PASS")  # Replace "changeme" with your password
 
@@ -31,6 +38,10 @@ OS_TYPE="l26"                  # OS type (l26 = Linux 2.6+)
 START_ON_BOOT="yes"            # Auto-start VM on host boot (yes/no)
 NUMA="yes"                     # Enable NUMA (yes/no, improves performance on multi-socket hosts)
 KVM_ARGS="-cpu host,+aes"      # Additional KVM arguments
+
+# DRY RUN Mode
+# Set DRY_RUN=true to echo commands instead of executing them
+DRY_RUN=${DRY_RUN:-false}      # Default to false if not set
 
 ###################################
 ### END CONFIGURABLE PARAMETERS ###
@@ -52,6 +63,17 @@ NC='\033[0m' # No Color
 #################################################
 ### HELPER FUNCTIONS (RUN ON PROXMOX HOST)    ###
 #################################################
+
+# Run or echo command based on DRY_RUN setting
+run_command() {
+    if [ "$DRY_RUN" = "true" ]; then
+        echo -e "${YELLOW}[DRY RUN]${NC} Would execute: $*"
+        return 0
+    else
+        eval "$@"
+        return $?
+    fi
+}
 
 # Display section header
 section() {
@@ -226,6 +248,10 @@ section "Proxmox Ubuntu VM Creation Script"
 echo "This script will create an Ubuntu 24.04.2 Desktop VM on Proxmox"
 echo "NOTE: This script is running on the Proxmox host and will create a VM"
 
+if [ "$DRY_RUN" = "true" ]; then
+    info "DRY RUN MODE ACTIVE - Commands will be echoed but not executed"
+fi
+
 # Query and display system information
 get_next_available_vm_id
 get_available_storage_pools
@@ -262,62 +288,62 @@ section "Creating VM on Proxmox"
 # Download ISO if not already in Proxmox storage
 if ! pvesm list $ISO_STORAGE | grep -q "$ISO_NAME"; then
     info "Downloading Ubuntu Desktop ISO..."
-    wget -O "$TMP_DIR/$ISO_NAME" "$UBUNTU_ISO_URL" || {
+    run_command "wget -O \"$TMP_DIR/$ISO_NAME\" \"$UBUNTU_ISO_URL\"" || {
         error "Failed to download Ubuntu ISO"
     }
 
     # Upload ISO to Proxmox storage
     info "Uploading ISO to Proxmox storage..."
-    pvesm upload $ISO_STORAGE iso "$TMP_DIR/$ISO_NAME" || {
+    run_command "pvesm upload $ISO_STORAGE iso \"$TMP_DIR/$ISO_NAME\"" || {
         error "Failed to upload ISO to Proxmox storage"
     }
 
     # Clean up downloaded ISO
-    rm -f "$TMP_DIR/$ISO_NAME"
+    run_command "rm -f \"$TMP_DIR/$ISO_NAME\""
 else
     info "ISO already exists in Proxmox storage"
 fi
 
 # Create VM with basic configuration
 info "Creating VM with basic configuration..."
-qm create $VM_ID \
-  --name "$VM_NAME" \
-  --memory $MEMORY \
-  --balloon $BALLOON \
-  --cores $CORES \
-  --cpu $CPU_TYPE \
-  --machine $MACHINE_TYPE \
-  --ostype $OS_TYPE \
-  --net0 virtio,bridge=$NET_BRIDGE${VLAN_TAG:+,tag=$VLAN_TAG} \
-  --onboot $START_ON_BOOT \
-  --scsihw virtio-scsi-pci \
-  --numa $NUMA \
-  --args "$KVM_ARGS" || {
+run_command "qm create $VM_ID \\
+  --name \"$VM_NAME\" \\
+  --memory $MEMORY \\
+  --balloon $BALLOON \\
+  --cores $CORES \\
+  --cpu $CPU_TYPE \\
+  --machine $MACHINE_TYPE \\
+  --ostype $OS_TYPE \\
+  --net0 virtio,bridge=$NET_BRIDGE${VLAN_TAG:+,tag=$VLAN_TAG} \\
+  --onboot $START_ON_BOOT \\
+  --scsihw virtio-scsi-pci \\
+  --numa $NUMA \\
+  --args \"$KVM_ARGS\"" || {
     error "Failed to create VM"
   }
 
 # Create and attach disk
 info "Creating disk..."
-qm set $VM_ID \
-  --scsi0 $STORAGE:$DISK_SIZE,discard=on,iothread=1,ssd=1 \
-  --boot order=scsi0 || {
+run_command "qm set $VM_ID \\
+  --scsi0 $STORAGE:$DISK_SIZE,discard=on,iothread=1,ssd=1 \\
+  --boot order=scsi0" || {
     error "Failed to create disk"
 }
 
 # Mount the ISO for installation
 info "Mounting installation ISO..."
-qm set $VM_ID \
-  --ide2 $ISO_STORAGE:iso/$ISO_NAME,media=cdrom \
-  --boot order=ide2,scsi0 || {
+run_command "qm set $VM_ID \\
+  --ide2 $ISO_STORAGE:iso/$ISO_NAME,media=cdrom \\
+  --boot order=ide2,scsi0" || {
     error "Failed to mount ISO"
 }
 
 # Configure display and other settings
 info "Configuring display and other settings..."
-qm set $VM_ID \
-  --agent enabled=1 \
-  --vga std \
-  --serial0 socket || {
+run_command "qm set $VM_ID \\
+  --agent enabled=1 \\
+  --vga std \\
+  --serial0 socket" || {
     error "Failed to configure display settings"
 }
 
