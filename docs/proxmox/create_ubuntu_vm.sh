@@ -6,7 +6,7 @@
 #################################################
 ### CONFIGURABLE PARAMETERS - MODIFY AS NEEDED ###
 #################################################
-DRY_RUN="true"
+# DRY_RUN="true"
 # Basic VM Configuration
 VM_ID="103"                   # Unique VM ID (change for each new VM)
 VM_NAME="gitops-lab2" # Display name
@@ -299,7 +299,7 @@ if ! pvesm list "$ISO_STORAGE" --content iso | grep -q "$ISO_NAME"; then
     }
 
     # Clean up downloaded ISO
-    run_command "rm -f \"$TMP_DIR/$ISO_NAME\""
+    # run_command "rm -f \"$TMP_DIR/$ISO_NAME\""
 else
     info "ISO already exists in Proxmox storage"
 fi
