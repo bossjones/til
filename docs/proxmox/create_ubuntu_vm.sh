@@ -51,7 +51,7 @@ DRY_RUN=${DRY_RUN:-false}      # Default to false if not set
 UBUNTU_ISO_URL="https://releases.ubuntu.com/24.04.2/ubuntu-24.04.2-desktop-amd64.iso"
 ISO_NAME="ubuntu-24.04.2-desktop-amd64.iso"
 ISO_STORAGE="local"  # Storage location for ISO files
-TMP_DIR="/tmp"
+ISO_PATH="/var/lib/vz/template/iso"  # Default Proxmox ISO storage path
 
 # Colors for output
 RED='\033[0;31m'
@@ -285,28 +285,12 @@ fi
 
 section "Creating VM on Proxmox"
 
-# Download ISO if not already in Proxmox storage
-if ! pvesm list "$ISO_STORAGE" --content iso | grep -q "$ISO_NAME"; then
-    info "ISO not found in Proxmox storage"
-
-    # Check if ISO exists in temporary directory
-    if [ -f "$TMP_DIR/$ISO_NAME" ]; then
-        info "ISO found in temporary directory, skipping download"
-    else
-        info "Downloading Ubuntu Desktop ISO..."
-        run_command "wget -O \"$TMP_DIR/$ISO_NAME\" \"$UBUNTU_ISO_URL\"" || {
-            error "Failed to download Ubuntu ISO"
-        }
-    fi
-
-    # Upload ISO to Proxmox storage
-    info "Uploading ISO to Proxmox storage..."
-    run_command "pvesm upload $ISO_STORAGE iso \"$TMP_DIR/$ISO_NAME\"" || {
-        error "Failed to upload ISO to Proxmox storage"
+# Download ISO directly to Proxmox storage if not exists
+if [ ! -f "$ISO_PATH/$ISO_NAME" ]; then
+    info "ISO not found in Proxmox storage, downloading directly..."
+    run_command "wget -O \"$ISO_PATH/$ISO_NAME\" \"$UBUNTU_ISO_URL\"" || {
+        error "Failed to download Ubuntu ISO"
     }
-
-    # Clean up downloaded ISO
-    # run_command "rm -f \"$TMP_DIR/$ISO_NAME\""
 else
     info "ISO already exists in Proxmox storage"
 fi
