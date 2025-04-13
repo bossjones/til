@@ -287,10 +287,17 @@ section "Creating VM on Proxmox"
 
 # Download ISO if not already in Proxmox storage
 if ! pvesm list "$ISO_STORAGE" --content iso | grep -q "$ISO_NAME"; then
-    info "Downloading Ubuntu Desktop ISO..."
-    run_command "wget -O \"$TMP_DIR/$ISO_NAME\" \"$UBUNTU_ISO_URL\"" || {
-        error "Failed to download Ubuntu ISO"
-    }
+    info "ISO not found in Proxmox storage"
+
+    # Check if ISO exists in temporary directory
+    if [ -f "$TMP_DIR/$ISO_NAME" ]; then
+        info "ISO found in temporary directory, skipping download"
+    else
+        info "Downloading Ubuntu Desktop ISO..."
+        run_command "wget -O \"$TMP_DIR/$ISO_NAME\" \"$UBUNTU_ISO_URL\"" || {
+            error "Failed to download Ubuntu ISO"
+        }
+    fi
 
     # Upload ISO to Proxmox storage
     info "Uploading ISO to Proxmox storage..."
